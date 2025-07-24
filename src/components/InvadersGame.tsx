@@ -1,6 +1,4 @@
 // src/components/InvadersGame.tsx
-
-// 👇 import React from 'react'; を削除しました
 import { useState, useEffect, useCallback } from 'react';
 
 const GAME_WIDTH = 500;
@@ -14,7 +12,11 @@ export function InvadersGame() {
   const [score, setScore] = useState(0);
 
   useEffect(() => {
-    const initialAliens = [];
+    const initialAliens: {
+        x: number;
+        y: number;
+        direction: 'left' | 'right';
+    }[] = [];
     for (let i = 0; i < 5; i++) {
       for (let j = 0; j < 3; j++) {
         initialAliens.push({ x: 60 + i * 80, y: 50 + j * 50, direction: 'right' });
@@ -47,23 +49,33 @@ export function InvadersGame() {
         prevBullets.map((b) => ({ ...b, y: b.y - 5 })).filter((b) => b.y > 0)
       );
 
+      // ▼▼▼ エイリアン移動ロジックの修正 ▼▼▼
       setAliens((prevAliens) => {
         const atEdge = prevAliens.some(a => a.x <= 10 || a.x >= GAME_WIDTH - 20);
         return prevAliens.map(a => {
-            const direction: 'left' | 'right' = atEdge ? (a.direction === 'left' ? 'right' : 'left') : a.direction;
+            // direction変数の型を明確に 'left' | 'right' と定義する
+            const direction: 'left' | 'right' = atEdge 
+                ? (a.direction === 'left' ? 'right' : 'left') 
+                : a.direction;
+            
             const newY = atEdge ? a.y + 15 : a.y;
             const newX = direction === 'right' ? a.x + 2 : a.x - 2;
-            if (newY > player.y - 10) setGameOver(true);
+
+            if (newY > player.y - 10) {
+              setGameOver(true);
+            }
             return { x: newX, y: newY, direction };
         });
       });
+      // ▲▲▲ ここまで ▲▲▲
 
       setBullets((prevBullets) => {
         const remainingBullets = [];
         for (const bullet of prevBullets) {
             let hit = false;
             setAliens(prevAliens => {
-                const remainingAliens = prevAliens.filter(alien => {
+                return prevAliens.filter(alien => {
+                    if (hit) return true; // すでにこの弾で別のエイリアンを倒していたら判定しない
                     const distance = Math.sqrt(Math.pow(bullet.x - alien.x, 2) + Math.pow(bullet.y - alien.y, 2));
                     if (distance < 15) {
                         hit = true;
@@ -72,7 +84,6 @@ export function InvadersGame() {
                     }
                     return true;
                 });
-                return remainingAliens;
             });
             if (!hit) remainingBullets.push(bullet);
         }
