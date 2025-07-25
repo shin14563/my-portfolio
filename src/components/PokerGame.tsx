@@ -74,7 +74,6 @@ function evaluateHand(hand: Card[], communityCards: Card[]): HandResult {
     }
 
     if (isStraight && isFlush) {
-        const flushCards = allCardValues.filter(c => c.suit === flushSuit);
         // Logic to find straight in flush cards
         return { score: 8, name: "Straight Flush", values: straightValues };
     }
