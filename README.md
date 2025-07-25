@@ -1,69 +1,42 @@
-# React + TypeScript + Vite
+# 私のポートフォリオ
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+このプロジェクトは、React、TypeScript、Viteで構築されたポートフォリオサイトです。
 
-Currently, two official plugins are available:
+## 機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+*   **書籍:** 読んだ本やおすすめの本を一覧表示します。
+*   **プロジェクト:** これまで作成したプロジェクトを紹介します。
+*   **ゲーム:** インタラクティブなゲームを遊べます。
 
-## Expanding the ESLint configuration
+## 技術スタック
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+*   **フレームワーク:** [React](https://react.dev/)
+*   **言語:** [TypeScript](https://www.typescriptlang.org/)
+*   **ビルドツール:** [Vite](https://vitejs.dev/)
+*   **スタイリング:** [Tailwind CSS](https://tailwindcss.com/)
+*   **ルーティング:** [React Router](https://reactrouter.com/)
+*   **Markdown:** [React Markdown](https://github.com/remarkjs/react-markdown)
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 始め方
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+1.  **リポジトリをクローンします:**
+    ```bash
+    git clone https://github.com/your-username/my-portfolio.git
+    ```
+2.  **依存関係をインストールします:**
+    ```bash
+    cd my-portfolio
+    npm install
+    ```
+3.  **開発サーバーを起動します:**
+    ```bash
+    npm run dev
+    ```
+4.  **ブラウザで `http://localhost:5173/` を開きます。**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## 利用可能なスクリプト
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+*   `npm run dev`: 開発サーバーを起動します。
+*   `npm run build`: プロダクション用にビルドします。
+*   `npm run lint`: コードの静的解析を実行します。
+*   `npm run preview`: プロダクションビルドをプレビューします。
