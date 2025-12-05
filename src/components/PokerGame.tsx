@@ -15,9 +15,9 @@ interface Card {
 }
 
 interface HandResult {
-    score: number; // 役のスコア (例: 8 for Straight Flush)
-    name: string;  // 役の名前
-    values: number[]; // 役の判定に使用したカードのランク値 (タイブレーク用)
+  score: number; // 役のスコア (例: 8 for Straight Flush)
+  name: string;  // 役の名前
+  values: number[]; // 役の判定に使用したカードのランク値 (タイブレーク用)
 }
 
 type GameStage = 'setup' | 'pre-flop' | 'flop' | 'turn' | 'river' | 'showdown';
@@ -36,161 +36,161 @@ function shuffleDeck(deck: Omit<Card, 'isFlipped'>[]): Omit<Card, 'isFlipped'>[]
 }
 
 function evaluateHand(hand: Card[], communityCards: Card[]): HandResult {
-    const allCards = [...hand, ...communityCards];
-    const allCardValues = allCards.map(c => ({ ...c, value: RANK_VALUES[c.rank] })).sort((a, b) => b.value - a.value);
+  const allCards = [...hand, ...communityCards];
+  const allCardValues = allCards.map(c => ({ ...c, value: RANK_VALUES[c.rank] })).sort((a, b) => b.value - a.value);
 
-    const rankCounts = allCardValues.reduce((acc, card) => {
-        acc[card.value] = (acc[card.value] || 0) + 1;
-        return acc;
-    }, {} as Record<number, number>);
+  const rankCounts = allCardValues.reduce((acc, card) => {
+    acc[card.value] = (acc[card.value] || 0) + 1;
+    return acc;
+  }, {} as Record<number, number>);
 
-    const suitCounts = allCardValues.reduce((acc, card) => {
-        acc[card.suit] = (acc[card.suit] || 0) + 1;
-        return acc;
-    }, {} as Record<string, number>);
+  const suitCounts = allCardValues.reduce((acc, card) => {
+    acc[card.suit] = (acc[card.suit] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-    const uniqueValues = [...new Set(allCardValues.map(c => c.value))].sort((a, b) => b - a);
+  const uniqueValues = [...new Set(allCardValues.map(c => c.value))].sort((a, b) => b - a);
 
-    const flushSuit = Object.keys(suitCounts).find(suit => suitCounts[suit] >= 5);
-    const isFlush = !!flushSuit;
+  const flushSuit = Object.keys(suitCounts).find(suit => suitCounts[suit] >= 5);
+  const isFlush = !!flushSuit;
 
-    let isStraight = false;
-    let straightValues: number[] = [];
-    const aceLowStraightValues = [14, 5, 4, 3, 2];
-    if (uniqueValues.length >= 5) {
-        if (aceLowStraightValues.every(v => uniqueValues.includes(v))) {
-            isStraight = true;
-            straightValues = [5, 4, 3, 2, 1]; // A-5 is a 5-high straight
-        } else {
-            for (let i = 0; i <= uniqueValues.length - 5; i++) {
-                const slice = uniqueValues.slice(i, i + 5);
-                if (slice[0] - slice[4] === 4) {
-                    isStraight = true;
-                    straightValues = slice;
-                    break;
-                }
-            }
+  let isStraight = false;
+  let straightValues: number[] = [];
+  const aceLowStraightValues = [14, 5, 4, 3, 2];
+  if (uniqueValues.length >= 5) {
+    if (aceLowStraightValues.every(v => uniqueValues.includes(v))) {
+      isStraight = true;
+      straightValues = [5, 4, 3, 2, 1]; // A-5 is a 5-high straight
+    } else {
+      for (let i = 0; i <= uniqueValues.length - 5; i++) {
+        const slice = uniqueValues.slice(i, i + 5);
+        if (slice[0] - slice[4] === 4) {
+          isStraight = true;
+          straightValues = slice;
+          break;
         }
+      }
     }
+  }
 
-    if (isStraight && isFlush) {
-        // Logic to find straight in flush cards
-        return { score: 8, name: "Straight Flush", values: straightValues };
-    }
+  if (isStraight && isFlush) {
+    // Logic to find straight in flush cards
+    return { score: 8, name: "Straight Flush", values: straightValues };
+  }
 
-    const groups = Object.keys(rankCounts).map(Number).sort((a, b) => b - a);
-    const four = groups.find(v => rankCounts[v] === 4);
-    if (four) {
-        const kickers = uniqueValues.filter(v => v !== four);
-        return { score: 7, name: "Four of a Kind", values: [four, kickers[0]] };
-    }
+  const groups = Object.keys(rankCounts).map(Number).sort((a, b) => b - a);
+  const four = groups.find(v => rankCounts[v] === 4);
+  if (four) {
+    const kickers = uniqueValues.filter(v => v !== four);
+    return { score: 7, name: "Four of a Kind", values: [four, kickers[0]] };
+  }
 
-    const three = groups.find(v => rankCounts[v] === 3);
-    const pairs = groups.filter(v => rankCounts[v] === 2);
-    if (three && pairs.length > 0) {
-        return { score: 6, name: "Full House", values: [three, pairs[0]] };
-    }
+  const three = groups.find(v => rankCounts[v] === 3);
+  const pairs = groups.filter(v => rankCounts[v] === 2);
+  if (three && pairs.length > 0) {
+    return { score: 6, name: "Full House", values: [three, pairs[0]] };
+  }
 
-    if (isFlush) {
-        const flushCards = allCardValues.filter(c => c.suit === flushSuit);
-        return { score: 5, name: "Flush", values: flushCards.map(c => c.value).slice(0, 5) };
-    }
+  if (isFlush) {
+    const flushCards = allCardValues.filter(c => c.suit === flushSuit);
+    return { score: 5, name: "Flush", values: flushCards.map(c => c.value).slice(0, 5) };
+  }
 
-    if (isStraight) {
-        return { score: 4, name: "Straight", values: straightValues.slice(0, 5) };
-    }
+  if (isStraight) {
+    return { score: 4, name: "Straight", values: straightValues.slice(0, 5) };
+  }
 
-    if (three) {
-        const kickers = uniqueValues.filter(v => v !== three);
-        return { score: 3, name: "Three of a Kind", values: [three, ...kickers.slice(0, 2)] };
-    }
+  if (three) {
+    const kickers = uniqueValues.filter(v => v !== three);
+    return { score: 3, name: "Three of a Kind", values: [three, ...kickers.slice(0, 2)] };
+  }
 
-    if (pairs.length >= 2) {
-        const topTwoPairs = pairs.slice(0, 2);
-        const kicker = uniqueValues.find(v => !topTwoPairs.includes(v));
-        return { score: 2, name: "Two Pair", values: [...topTwoPairs, kicker!] };
-    }
+  if (pairs.length >= 2) {
+    const topTwoPairs = pairs.slice(0, 2);
+    const kicker = uniqueValues.find(v => !topTwoPairs.includes(v));
+    return { score: 2, name: "Two Pair", values: [...topTwoPairs, kicker!] };
+  }
 
-    if (pairs.length === 1) {
-        const pairValue = pairs[0];
-        const kickers = uniqueValues.filter(v => v !== pairValue);
-        return { score: 1, name: "One Pair", values: [pairValue, ...kickers.slice(0, 3)] };
-    }
+  if (pairs.length === 1) {
+    const pairValue = pairs[0];
+    const kickers = uniqueValues.filter(v => v !== pairValue);
+    return { score: 1, name: "One Pair", values: [pairValue, ...kickers.slice(0, 3)] };
+  }
 
-    return { score: 0, name: "High Card", values: uniqueValues.slice(0, 5) };
+  return { score: 0, name: "High Card", values: uniqueValues.slice(0, 5) };
 }
 
 const getRankName = (value: number): string => {
-    if (value === 1) return 'A'; // For Ace-low straight
-    const rankEntry = Object.entries(RANK_VALUES).find(([_, val]) => val === value);
-    return rankEntry ? rankEntry[0] : '';
+  if (value === 1) return 'A'; // For Ace-low straight
+  const rankEntry = Object.entries(RANK_VALUES).find(([_, val]) => val === value);
+  return rankEntry ? rankEntry[0] : '';
 };
 
 const getRankSuffix = (rank: number): string => {
-    if (rank % 100 >= 11 && rank % 100 <= 13) return `${rank}th`;
-    switch (rank % 10) {
-        case 1: return `${rank}st`;
-        case 2: return `${rank}nd`;
-        case 3: return `${rank}rd`;
-        default: return `${rank}th`;
-    }
+  if (rank % 100 >= 11 && rank % 100 <= 13) return `${rank}th`;
+  switch (rank % 10) {
+    case 1: return `${rank}st`;
+    case 2: return `${rank}nd`;
+    case 3: return `${rank}rd`;
+    default: return `${rank}th`;
+  }
 };
 
 const HandDetails = ({ hand }: { hand: HandResult }) => {
-    const { name, values } = hand;
+  const { name, values } = hand;
 
-    const renderMiniCard = (value: number) => (
-        <span key={value} className="inline-block bg-white text-black text-xs font-bold px-1.5 py-0.5 rounded-sm mx-0.5 border border-gray-400">
-            {getRankName(value)}
-        </span>
-    );
+  const renderMiniCard = (value: number) => (
+    <span key={value} className="inline-block bg-white text-black text-xs font-bold px-1.5 py-0.5 rounded-sm mx-0.5 border border-gray-400">
+      {getRankName(value)}
+    </span>
+  );
 
-    let mainValues: number[] = [];
-    let kickerValues: number[] = [];
+  let mainValues: number[] = [];
+  let kickerValues: number[] = [];
 
-    switch (name) {
-        case "Four of a Kind":
-            mainValues = values.slice(0, 1);
-            kickerValues = values.slice(1, 2);
-            break;
-        case "Full House":
-            mainValues = values.slice(0, 2);
-            break;
-        case "Three of a Kind":
-            mainValues = values.slice(0, 1);
-            kickerValues = values.slice(1, 3);
-            break;
-        case "Two Pair":
-            mainValues = values.slice(0, 2);
-            kickerValues = values.slice(2, 3);
-            break;
-        case "One Pair":
-            mainValues = values.slice(0, 1);
-            kickerValues = values.slice(1, 4);
-            break;
-        default:
-            mainValues = values;
-            break;
-    }
+  switch (name) {
+    case "Four of a Kind":
+      mainValues = values.slice(0, 1);
+      kickerValues = values.slice(1, 2);
+      break;
+    case "Full House":
+      mainValues = values.slice(0, 2);
+      break;
+    case "Three of a Kind":
+      mainValues = values.slice(0, 1);
+      kickerValues = values.slice(1, 3);
+      break;
+    case "Two Pair":
+      mainValues = values.slice(0, 2);
+      kickerValues = values.slice(2, 3);
+      break;
+    case "One Pair":
+      mainValues = values.slice(0, 1);
+      kickerValues = values.slice(1, 4);
+      break;
+    default:
+      mainValues = values;
+      break;
+  }
 
-    return (
-        <div className="text-right">
-            <span className="font-semibold text-base sm:text-lg">{name}</span>
-            <div className="mt-1 h-6"> {/* Set a fixed height to prevent layout shifts */}
-                {mainValues.length > 0 && (
-                    <div className="inline-block align-middle">
-                        {mainValues.map(v => renderMiniCard(v))}
-                    </div>
-                )}
-                {kickerValues.length > 0 && (
-                    <div className="inline-block align-middle ml-1 sm:ml-2">
-                        <span className="text-xs text-gray-400 mr-1">Kicker:</span>
-                        {kickerValues.map(v => renderMiniCard(v))}
-                    </div>
-                )}
-            </div>
-        </div>
-    );
+  return (
+    <div className="text-right">
+      <span className="font-semibold text-base sm:text-lg">{name}</span>
+      <div className="mt-1 h-6"> {/* Set a fixed height to prevent layout shifts */}
+        {mainValues.length > 0 && (
+          <div className="inline-block align-middle">
+            {mainValues.map(v => renderMiniCard(v))}
+          </div>
+        )}
+        {kickerValues.length > 0 && (
+          <div className="inline-block align-middle ml-1 sm:ml-2">
+            <span className="text-xs text-gray-400 mr-1">Kicker:</span>
+            {kickerValues.map(v => renderMiniCard(v))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export function PokerGame() {
@@ -211,7 +211,7 @@ export function PokerGame() {
         newPlayers[j].push({ ...card, isFlipped: false });
       }
     }
-    
+
     setPlayers(newPlayers);
     setDeck(newDeck);
     setCommunity([]);
@@ -221,17 +221,17 @@ export function PokerGame() {
 
   const nextStage = () => {
     const newDeck = [...deck];
-    
+
     if (stage === 'pre-flop') {
-      const flop = newDeck.splice(0, 3).map(c => ({...c, isFlipped: true}));
+      const flop = newDeck.splice(0, 3).map(c => ({ ...c, isFlipped: true }));
       setCommunity(flop);
       setStage('flop');
     } else if (stage === 'flop') {
-      const turn = newDeck.splice(0, 1).map(c => ({...c, isFlipped: true}));
+      const turn = newDeck.splice(0, 1).map(c => ({ ...c, isFlipped: true }));
       setCommunity(prev => [...prev, ...turn]);
       setStage('turn');
     } else if (stage === 'turn') {
-      const river = newDeck.splice(0, 1).map(c => ({...c, isFlipped: true}));
+      const river = newDeck.splice(0, 1).map(c => ({ ...c, isFlipped: true }));
       setCommunity(prev => [...prev, ...river]);
       setStage('river');
     }
@@ -239,13 +239,13 @@ export function PokerGame() {
   };
 
   const compareHands = (handA: HandResult, handB: HandResult): number => {
-      if (handA.score !== handB.score) return handB.score - handA.score;
-      for (let i = 0; i < handA.values.length; i++) {
-          if (handA.values[i] !== handB.values[i]) {
-              return handB.values[i] - handA.values[i];
-          }
+    if (handA.score !== handB.score) return handB.score - handA.score;
+    for (let i = 0; i < handA.values.length; i++) {
+      if (handA.values[i] !== handB.values[i]) {
+        return handB.values[i] - handA.values[i];
       }
-      return 0; // Chop
+    }
+    return 0; // Chop
   }
 
   const showResults = () => {
@@ -257,18 +257,18 @@ export function PokerGame() {
 
     const rankedResults: { player: number; hand: HandResult; rank: number }[] = [];
     if (finalResults.length > 0) {
-        rankedResults.push({ ...finalResults[0], rank: 1 });
-        for (let i = 1; i < finalResults.length; i++) {
-            const prevResult = finalResults[i - 1];
-            const currentResult = finalResults[i];
-            const prevRank = rankedResults[i - 1].rank;
+      rankedResults.push({ ...finalResults[0], rank: 1 });
+      for (let i = 1; i < finalResults.length; i++) {
+        const prevResult = finalResults[i - 1];
+        const currentResult = finalResults[i];
+        const prevRank = rankedResults[i - 1].rank;
 
-            if (compareHands(currentResult.hand, prevResult.hand) === 0) {
-                rankedResults.push({ ...currentResult, rank: prevRank });
-            } else {
-                rankedResults.push({ ...currentResult, rank: i + 1 });
-            }
+        if (compareHands(currentResult.hand, prevResult.hand) === 0) {
+          rankedResults.push({ ...currentResult, rank: prevRank });
+        } else {
+          rankedResults.push({ ...currentResult, rank: i + 1 });
         }
+      }
     }
 
     setResults(rankedResults);
@@ -305,28 +305,42 @@ export function PokerGame() {
 
   if (stage === 'setup') {
     return (
-      <div className="flex flex-col items-center p-8 bg-gray-100 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800">Poker Game</h2>
-        <div className="mb-6">
-          <label htmlFor="numPlayers" className="mr-2 font-semibold text-gray-700">Number of Players (2-6):</label>
-          <input
-            type="number"
-            id="numPlayers"
-            value={numPlayers}
-            onChange={(e) => {
-              const val = parseInt(e.target.value, 10);
-              if (val >= 2 && val <= 6) setNumPlayers(val);
-            }}
-            min="2"
-            max="6"
-            className="w-20 text-center p-2 border border-gray-300 rounded-md"
-          />
+      <div className="flex flex-col items-center p-8 bg-gradient-to-br from-purple-100 to-pink-100 rounded-2xl shadow-2xl max-w-md w-full">
+        <h2 className="text-4xl font-black mb-8 text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">Poker Game</h2>
+
+        {/* Mobile-friendly player selection */}
+        <div className="mb-8 w-full">
+          <label className="block text-center mb-4 font-bold text-gray-700 text-lg">プレイヤー人数 (2-8)</label>
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => setNumPlayers(prev => Math.max(2, prev - 1))}
+              className="w-14 h-14 bg-purple-600 text-white font-bold rounded-full shadow-lg hover:bg-purple-700 active:scale-95 transition-all duration-200 text-2xl flex items-center justify-center"
+              aria-label="プレイヤー数を減らす"
+            >
+              −
+            </button>
+            <div className="w-24 h-20 bg-white rounded-xl shadow-inner flex items-center justify-center border-4 border-purple-300">
+              <span className="text-5xl font-black text-purple-600">{numPlayers}</span>
+            </div>
+            <button
+              onClick={() => setNumPlayers(prev => Math.min(8, prev + 1))}
+              className="w-14 h-14 bg-purple-600 text-white font-bold rounded-full shadow-lg hover:bg-purple-700 active:scale-95 transition-all duration-200 text-2xl flex items-center justify-center"
+              aria-label="プレイヤー数を増やす"
+            >
+              +
+            </button>
+          </div>
         </div>
-        <button onClick={startGame} className="px-8 py-3 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition-all duration-200">
-          Start Game
+
+        <button
+          onClick={startGame}
+          className="px-10 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-xl rounded-xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200 mb-6"
+        >
+          ゲーム開始
         </button>
-        <Link to="/" className="mt-8 text-blue-600 hover:underline">
-          Back to Portfolio
+
+        <Link to="/" className="mt-4 px-6 py-2 text-purple-600 hover:text-purple-800 font-semibold hover:underline transition-colors">
+          ← ゲーム選択に戻る
         </Link>
       </div>
     );
@@ -337,7 +351,7 @@ export function PokerGame() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-4xl font-bold">Texas Hold'em</h2>
         <Link to="/" className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-all duration-200">
-          Exit Game
+          ゲーム選択に戻る
         </Link>
       </div>
 
@@ -378,22 +392,22 @@ export function PokerGame() {
           <h3 className="text-2xl font-bold text-center text-yellow-400 mb-4">🏆 Results 🏆</h3>
           <div className="space-y-3">
             {results.map((result, index) => {
-                const isWinner = result.rank === 1;
-                return (
-                    <div 
-                        key={index} 
-                        className={`flex justify-between items-center p-3 rounded-lg transition-all duration-300 ${isWinner ? 'bg-yellow-500 text-black shadow-lg scale-105' : 'bg-gray-800'}`}>
-                        <div className="flex items-center">
-                            <span className={`font-black text-xl w-12 text-center ${isWinner ? 'text-yellow-900' : 'text-gray-400'}`}>
-                                {getRankSuffix(result.rank)}
-                            </span>
-                            <span className={`font-bold text-lg ${isWinner ? 'text-gray-900' : 'text-white'}`}>
-                                Player {result.player}
-                            </span>
-                        </div>
-                        <HandDetails hand={result.hand} />
-                    </div>
-                );
+              const isWinner = result.rank === 1;
+              return (
+                <div
+                  key={index}
+                  className={`flex justify-between items-center p-3 rounded-lg transition-all duration-300 ${isWinner ? 'bg-yellow-500 text-black shadow-lg scale-105' : 'bg-gray-800'}`}>
+                  <div className="flex items-center">
+                    <span className={`font-black text-xl w-12 text-center ${isWinner ? 'text-yellow-900' : 'text-gray-400'}`}>
+                      {getRankSuffix(result.rank)}
+                    </span>
+                    <span className={`font-bold text-lg ${isWinner ? 'text-gray-900' : 'text-white'}`}>
+                      Player {result.player}
+                    </span>
+                  </div>
+                  <HandDetails hand={result.hand} />
+                </div>
+              );
             })}
           </div>
         </div>
