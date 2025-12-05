@@ -338,8 +338,6 @@ export function InvadersGame() {
             return prevAliens.filter(alien => {
               if (hit) return true;
 
-              const alienWidth = alien.type === 'boss' ? 60 : 20;
-              const alienHeight = alien.type === 'boss' ? 40 : 20;
               const distance = Math.sqrt(
                 Math.pow(bullet.x - alien.x, 2) + Math.pow(bullet.y - alien.y, 2)
               );
@@ -542,8 +540,8 @@ export function InvadersGame() {
               <div
                 key={index}
                 className={`flex justify-between items-center p-4 rounded-lg ${index === 0
-                    ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow-lg scale-105'
-                    : 'bg-gradient-to-r from-gray-50 to-gray-100'
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-400 text-white shadow-lg scale-105'
+                  : 'bg-gradient-to-r from-gray-50 to-gray-100'
                   }`}
               >
                 <div className="flex items-center gap-3">
